@@ -8,8 +8,8 @@ wire [1:0] fetch;
 wire [7:0] data, addr;
 wire [7:0] accum_out, alu_out;
 wire [7:0] ir_ad, pc_ad;
-wire [4:0] reg_ad;
-wire [2:0] ins;
+wire [3:0] reg_ad;
+wire [3:0] ins;
 
 ram RAM1(.data(data), .addr(addr), .ena(ram_ena), .read(ram_read), .write(ram_write));  //module ram(data, addr, ena, read, write);
 
@@ -47,3 +47,6 @@ controller CONTROLLER1(.ins(ins),
 					
 
 endmodule
+
+
+
