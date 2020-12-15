@@ -17,7 +17,7 @@ module core_tb_00  ;
 	  clk  = 1'b0  ;
 	 # 150 ;
 // 50 ps, single loop till start period.
-   repeat(99)
+   repeat(200)
    begin
 	   clk  = 1'b1  ;
 	  #50  clk  = 1'b0  ;
