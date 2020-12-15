@@ -1,7 +1,7 @@
 module controller(ins, clk, rst, write_r, read_r, PC_en, fetch, ac_ena, ram_ena, rom_ena,ram_write, ram_read, rom_read, ad_sel);
 
 input clk, rst;   		// clock, reset
-input [2:0] ins;  		// instructions, 3 bits, 8 types
+input [3:0] ins;  		// instructions, 3 bits, 8 types
 
 // Enable signals
 output reg write_r, read_r, PC_en, ac_ena, ram_ena, rom_ena;
@@ -18,14 +18,22 @@ reg [3:0] next_state; 	// next state
 
 
 // instruction code
-parameter 	NOP=3'b000, // no operation
-			LDO=3'b001,	// load ROM to register
-			LDA=3'b010, // load RAM to register
-			STO=3'b011, // Store intermediate results to accumulator
-			PRE=3'b100, // Prefetch Data from Address
-			ADD=3'b101, // Adds the contents of the memory address or integer to the accumulator
-			LDM=3'b110, // Load Multiple
-			HLT=3'b111; // Halt
+parameter 	NOP=4'b0000, // no operation
+			LDO=4'b0001,	// load ROM to register
+			LDA=4'b0010, // load RAM to register
+			STO=4'b0011, // Store intermediate results to accumulator
+			PRE=4'b0100, // Prefetch Data from Address
+			ADD=4'b0101, // Adds the contents of the memory address or integer to the accumulator
+			LDM=4'b0110, // Load Multiple
+			HLT=4'b0111, // Halt
+			AND=4'b1000, // AND the contents of the memory address or integer to the accumulator
+			OR=4'b1001, // OR the contents of the memory address or integer to the accumulator
+			//SLEF=4'b1010, //Shift Left
+			//SRIG=4'b1011, //Shift Right
+			SUB=4'b1100, //Subtract contents of the memory address or integer to the accumulator
+			INC=4'b1101, //Increment the contents of the memory address or integer to the accumulator by 1
+			DEC=4'b1110, //Decrement the contents of the memory address or integer to the accumulator by 1
+			XOR=4'b1111; //XOR the contents of the memory address or integer to the accumulator
 
 // state code			 
 parameter Sidle=4'hf,
@@ -41,7 +49,8 @@ parameter Sidle=4'hf,
 			 S9=4'd9,
 			 S10=4'd10,
 			 S11=4'd11,
-			 S12=4'd12;
+			 S12=4'd12,
+			 S13=4'd13;
 			 
 //PART A: D flip latch; State register
 always @(posedge clk or negedge rst) 
@@ -59,8 +68,9 @@ case(state)
 S1:		begin
 			if (ins==NOP) next_state=S0;
 			else if (ins==HLT)  next_state=S2;
-			else if (ins==PRE | ins==ADD) next_state=S9;
+			else if (ins==PRE | ins==ADD | ins==SUB | ins==OR | ins==AND | ins==XOR) next_state=S9;
 			else if (ins==LDM) next_state=S11;
+			else if (ins==INC | ins==DEC) next_state=S13;
 			else next_state=S3;
 		end
 
@@ -81,6 +91,7 @@ S9:		next_state=S10;
 S10:	next_state=S0;
 S11:	next_state=S12;
 S12:	next_state=S0;
+S13:	next_state=S0;
 default: next_state=Sidle;
 endcase
 end
@@ -109,7 +120,7 @@ case(state)
 		 write_r=0;
 		 read_r=0;
 		 PC_en=0;
- ac_ena=0;
+		 ac_ena=0;
 		 ram_ena=0;
 		 rom_ena=1;
 		 ram_write=0;
@@ -312,6 +323,19 @@ S4: begin
 		 ram_write=0;
 		 ram_read=0;
 		 rom_read=0;
+		 ad_sel=0;
+		 fetch=2'b00;	 
+		 end
+	 S13:begin //INC & DEC
+		 write_r=0;
+		 read_r=0;
+		 PC_en=0;
+		 ac_ena=1;
+		 ram_ena=0;
+		 rom_ena=1;
+		 ram_write=0;
+		 ram_read=0;
+		 rom_read=1;
 		 ad_sel=0;
 		 fetch=2'b00;	 
 		 end
